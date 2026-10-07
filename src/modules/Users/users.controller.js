@@ -1,14 +1,16 @@
 import { Router } from "express";
 import Users from "../../DB/Models/users.model.js";
 import * as userService from "./users.service.js"
+import { validation } from "../../Middlewares/validation.middleware.js";
+import { userIdSchema, userSchema } from "./users.validation.js";
 const userRouter=Router();
 
 /////////////////////Get User Profile Data////////////////////////
 
-userRouter.get('/profile/:userId',async(req,res)=>
+userRouter.get('/profile/:userId',validation(userSchema),async(req,res,next)=>
 {
-    const{userId}=req.params;
-    const result=await userService.getUserProfile(userId);
+   // const{userId}=req.params;
+    const result=await userService.getUserProfile(req.validate.params.userId);
     res.json({message:"User Profile Data",userData:result})
   
 })

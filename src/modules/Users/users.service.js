@@ -10,14 +10,18 @@ const userRepo=new UserRepository();
 /////////////////////Get User Profile Data////////////////////////
 export const getUserProfile=async(userId)=>
 {
-    if(!isValidObjectId(userId))
+   console.log(userId);
+   
+  /*  if(!isValidObjectId(userId))
     {
       //throw new Error("In-Valid ObjectId")
       throw new HttpAppError("In-Valid ObjectId",409,{InvalidObjectID:userId},"IDConflict");
         
-    }
+    }*/
     //const user= await Users.findById(userId);
     const user= await userRepo.findDocumentById(userId);
+    
+    
     if(user.phoneNumber)
     {
    user.phoneNumber=decrypt(user.phoneNumber);
