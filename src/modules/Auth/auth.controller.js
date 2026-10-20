@@ -1,9 +1,9 @@
 import { Router } from "express";
 import * as authService from "./auth.service.js"
 import * as validators from "./auth.validation.js";
-import { BadRequestException } from "../../Utils/Errors/exception.js";
 import { ZodError } from "zod";
 import { validation } from "../../Middlewares/validation.middleware.js";
+import { BadRequestException } from "../../Common/Utils/Errors/exception.js";
 const authRouter=Router();
 
 ////////////////////user signUp//////////////////////////////
@@ -56,7 +56,18 @@ res.json({
 
 
 
-
+authRouter.post('/refresh-token',async(req,res,next)=>
+{
+    const {refreshtoken}=req.headers;
+   
+    
+    if(!refreshtoken)
+    {
+        throw new BadRequestException('Refresh Token is required',null,'MISSING_REFRESH_TOKEN')
+    }
+    const result=await authService.refreshToken(refreshtoken)
+    res.status(200).json({message:"Token refreshed successfully",data:result})
+})
 
 
 

@@ -20,7 +20,8 @@ export const signupSchema=loginSchema.extend({
     phoneNumber:z.string().regex(/^(\+20|0020)?1[0125][0-9]{8}$/),
     age:z.number().min(16,{error:"age must be at least 16 years old"}).max(60).optional(),
     gender:z.enum(['male','female','other']).default("male"),
-    confirmPassword:z.string()
+    confirmPassword:z.string(),
+    role:z.enum(["user","admin"]).default("user")
 }).
 /*superRefine((data,ctx)=>
 {

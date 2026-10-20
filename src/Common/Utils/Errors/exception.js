@@ -26,3 +26,26 @@ export class ConflictException extends HttpAppError{
 
     }
 }
+
+
+export class NotFoundException extends HttpAppError{
+  
+    constructor(message,data,code)
+    {
+
+    super(message,404,data,code);
+   
+
+    }
+}
+
+export class UnauthorizedException extends HttpAppError{
+  
+    constructor(message,data,code)
+    {
+
+    super(message,401,data,code);
+   
+
+    }
+}

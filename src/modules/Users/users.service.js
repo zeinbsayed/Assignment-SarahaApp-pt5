@@ -1,16 +1,16 @@
-import { isValidObjectId } from "mongoose";
+
 import Users from "../../DB/Models/users.model.js";
-import { decrypt } from "../../Utils/Security/encryption.security.js";
+import { decrypt } from "../../Common/Utils/Security/encryption.security.js";
 import UserRepository from "../../DB/Repositories/user.repository.js";
-import HttpAppError from "../../Utils/Errors/app-error.js";
+import HttpAppError from "../../Common/Utils/Errors/app-error.js";
 
 
 //////////userRepo instance//////////////////
 const userRepo=new UserRepository();
 /////////////////////Get User Profile Data////////////////////////
-export const getUserProfile=async(userId)=>
+export const getUserProfile=async(user)=>
 {
-   console.log(userId);
+  // console.log(userId);
    
   /*  if(!isValidObjectId(userId))
     {
@@ -19,20 +19,22 @@ export const getUserProfile=async(userId)=>
         
     }*/
     //const user= await Users.findById(userId);
-    const user= await userRepo.findDocumentById(userId);
+    //const decodedData=verifyToken(token,ACCESS_TOKEN_SECRET);
+   // console.log(decodedData);
     
-    
+    //const user= await userRepo.findDocumentById(userId);
+   
     if(user.phoneNumber)
     {
    user.phoneNumber=decrypt(user.phoneNumber);
     }
     
-    if(!user)
+    /*if(!user)
     {
        // throw new Error("User Not found");
        throw new HttpAppError("User Not found",404,{"Notfound":user},"NOTFOUND");
 
-    }
+    }*/
    return user;
 }
 ////////////////////Get All Users////////////////////

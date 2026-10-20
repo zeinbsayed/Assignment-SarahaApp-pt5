@@ -1,5 +1,5 @@
 import crypto from "node:crypto"
-import { ENCRYPTION_KEY_S, IV_LENGTH_S } from "../../../Config/config.js";
+import { ENCRYPTION_KEY_S, IV_LENGTH_S } from "../../../../Config/config.js";
 const ENCRYPTION_KEY = Buffer.from(ENCRYPTION_KEY_S,'hex');
 
 

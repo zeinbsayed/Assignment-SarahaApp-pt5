@@ -1,14 +1,17 @@
-import Users from "../../DB/Models/users.model.js";
+
 import UserRepository from "../../DB/Repositories/user.repository.js";
-import HttpAppError from "../../Utils/Errors/app-error.js";
-import { BadRequestException, ConflictException } from "../../Utils/Errors/exception.js";
-import { encrypt } from "../../Utils/Security/encryption.security.js";
-import { compareTwoHashes, hash } from "../../Utils/Security/hashing.security.js";
+import envConfig from "../../../Config/config.js";
+import HttpAppError from "../../Common/Utils/Errors/app-error.js";
+import { BadRequestException, ConflictException } from "../../Common/Utils/Errors/exception.js";
+import { encrypt } from "../../Common/Utils/Security/encryption.security.js";
+import { compareTwoHashes } from "../../Common/Utils/Security/hashing.security.js";
+import {  decodeToken, generateToken } from "../../Common/Utils/token.utils.js";
+import { tokenTypesEnum } from "../../Common/constants.js";
 ////////////////////user sign up////////////////////////
 const userRepo=new UserRepository();
 export const signUp=async (userData)=>
 {
- const{username,email,password,gender,age,phoneNumber}=userData;
+ const{username,email,password,gender,age,phoneNumber,role}=userData;
  const usernamesplit=username.split(" ");
  const firstName=usernamesplit[0];
  const lastName=usernamesplit[1];
@@ -30,7 +33,8 @@ return userRepo.createOneDocument(
       email,
       password:hashedPassword,
       gender,age
-   ,phoneNumber:encryptionPhone||undefined});
+   ,phoneNumber:encryptionPhone||undefined
+,role});
  //const userInstance=new Users({firstName,lastName,email,password,gender,age});
  //console.log(userInstance);
  
@@ -68,8 +72,8 @@ export const login = async (userData) => {
  const { email, password }=userData;
     const emailExists = await userRepo.findUserByEmail(email);
 
-    console.log(" email:", email);
-    console.log(" emailExists:", emailExists);
+    //console.log(" email:", email);
+    //console.log(" emailExists:", emailExists);
 
     if (!emailExists) {
         console.log("User not found");
@@ -93,6 +97,25 @@ export const login = async (userData) => {
             "There is a problem with email or password"
         );
     }
-
-    return { message: "Login Successful" };
+  //generate acess token
+  //console.log(envConfig.jwt.user);
+  const accessToken=generateToken({_id:emailExists._id,email:emailExists.email,role:emailExists.role},
+    envConfig.jwt.user.access_token_secret,
+    {expiresIn:envConfig.jwt.user.access_token_expires_in})
+     const refreshToken=generateToken({_id:emailExists._id,email:emailExists.email,role:emailExists.role},
+    envConfig.jwt.user.refresh_token_secret,
+    {expiresIn:envConfig.jwt.user.refresh_token_expires_in})
+    return { message: "Login Successful",accessToken,refreshToken };
 };
+
+export const refreshToken=async(userRefeshToken)=>
+{
+   
+    
+ const user =await decodeToken({token:userRefeshToken,tokenType:tokenTypesEnum.REFRESH_TOKEN})
+ 
+ const accessToken=generateToken({_id:user._id,email:user.email,role:user.role},
+    envConfig.jwt.user.access_token_secret,
+    {expiresIn:envConfig.jwt.user.access_token_expires_in});
+  return { message: "Token refreshed Successful",accessToken };
+}

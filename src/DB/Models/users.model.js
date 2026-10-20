@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { genderEnum, roleEnum } from "../../Common/constants.js";
 
 const userSchema=new mongoose.Schema(
    {
@@ -36,8 +37,8 @@ const userSchema=new mongoose.Schema(
     gender:
     {
       type:String,
-      enum:['male','female','other'],
-      default:'other'
+      enum:Object.values(genderEnum),
+      default:genderEnum.MALE
     },
     age:
     {
@@ -49,7 +50,12 @@ const userSchema=new mongoose.Schema(
     {
       type:String
     },
-    phoneNumber:String
+    phoneNumber:String,
+    role:{
+      type:String,
+      enum:Object.values(roleEnum),
+      default:"user"
+    }
    },
    {
     virtuals:
@@ -67,7 +73,7 @@ const userSchema=new mongoose.Schema(
     timestamps:true
    }
 )
-  console.log("Allmodels",mongoose.models);
+
   
 const Users=mongoose.model('Users',userSchema);
 export default Users;
