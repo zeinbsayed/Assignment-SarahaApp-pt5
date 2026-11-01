@@ -1,0 +1,28 @@
+import { redisClient } from "../Clients/redis.client.js"
+
+
+export const get=(key)=>
+{
+ return redisClient.get(key);
+}
+export const del=(key)=>
+{
+ return redisClient.del(key);
+}
+export const set=({key,value,options={}})=>
+{
+ return redisClient.set(key,value,options);
+}
+export const TTL=(key)=>
+{
+ return redisClient.ttl(key);
+}
+export const expire=(key,expireIn)=>
+{
+ return redisClient.expire(key,expireIn);
+}
+export const calculateTTL=(expiration)=>
+{
+ const currentTime=Math.floor(Date.now()/1000);
+ return expiration-currentTime
+}

@@ -8,7 +8,7 @@ export const authenticate=async(req,res,next)=>
 {
     const userRepo=new UserRepository();
     const {authorization}=req.headers;  
-    console.log(authorization);
+
     
     if(!authorization)
     {
@@ -25,10 +25,12 @@ export const authenticate=async(req,res,next)=>
      {
         throw new BadRequestException('user not found',null,'UNAUTHORIZED');
      }*/
-     const user=decodeToken({token,tokenType:tokenTypesEnum.ACCESS_TOKEN});
+     const {user,tokenData}=await decodeToken({token,tokenType:tokenTypesEnum.ACCESS_TOKEN});
      
-   
+    //console.log("userrrr",user);
+    
      req.authUser=user;
+     req.accessTokenData=tokenData;
      next();
 }
 

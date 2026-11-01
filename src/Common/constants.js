@@ -15,3 +15,8 @@ export const tokenTypesEnum={
     REFRESH_TOKEN:"refresh_token",
     
 }
+export const providersEnum={
+    SYSTEM:"system",
+    GOOGLE:"google",
+    
+}

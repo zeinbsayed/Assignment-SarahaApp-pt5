@@ -3,6 +3,8 @@ import {  port  } from "../Config/config.js";
 import {  authRouter, messageRouter, userRouter } from "./modules/index.js";
 import dbConnection from "./DB/db.connection.js";
 import globalErrorHandler from "./Middlewares/global-error-handler.middleware.js";
+import cors from 'cors'
+import { redisConnection } from "./Common/Clients/redis.client.js";
 const app=express();
 //const port=3000;
 //connect to DB//////////
@@ -20,8 +22,11 @@ const startServer = async () => {
 
 //run server/////////
 startServer();
+//redis Connection
+redisConnection();
+
 //parsing body
-app.use(express.json());
+app.use(cors(),express.json());
 
 /////////////Routers and Controllers  ///////////
 app.use('/users',userRouter)

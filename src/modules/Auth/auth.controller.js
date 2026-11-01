@@ -4,6 +4,8 @@ import * as validators from "./auth.validation.js";
 import { ZodError } from "zod";
 import { validation } from "../../Middlewares/validation.middleware.js";
 import { BadRequestException } from "../../Common/Utils/Errors/exception.js";
+import { authenticate } from "../../Middlewares/authentication.middleware.js";
+import { decodeRefreshToken } from "../../Middlewares/decodeRefreshToken.middleware.js";
 const authRouter=Router();
 
 ////////////////////user signUp//////////////////////////////
@@ -69,6 +71,51 @@ authRouter.post('/refresh-token',async(req,res,next)=>
     res.status(200).json({message:"Token refreshed successfully",data:result})
 })
 
+//google-register
+
+authRouter.post('/google-register',async(req,res,next)=>
+{
+    
+    const {idToken}=req.body;
+   
+    
+    if(!idToken)
+    {
+        throw new BadRequestException('Google Token id is required',null,'MISSING_TOKEN_ID')
+    }
+    const result=await authService.googleRegister(idToken)
+    res.status(200).json({message:"user registered successfully",data:result});
+    
+})
 
 
+//google-login
+authRouter.post('/google-login',async(req,res,next)=>
+{
+    
+    
+    
+    
+    
+    const {idToken}=req.body;
+   
+
+    
+    if(!idToken)
+    {
+        throw new BadRequestException('Google Token id is required',null,'MISSING_TOKEN_ID')
+    }
+    const result=await authService.googleLogin(idToken)
+    res.status(200).json({message:"user logged successfully",data:result})
+})
+
+////////////logout 
+//google-login
+authRouter.post('/logout',authenticate,decodeRefreshToken,async(req,res,next)=>
+{
+    console.log("AcessTokenData",req.accessTokenData);
+    console.log("RefreshTokenData",req.refreshTokenData);
+    const result=await authService.logout(req.accessTokenData,req.refreshTokenData)
+    res.status(200).json({message:"user logged out successfully",data:result})
+})
 export default authRouter;

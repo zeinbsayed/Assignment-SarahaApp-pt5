@@ -1,8 +1,9 @@
 import jwt from "jsonwebtoken"
-import { BadRequestException } from "./Errors/exception.js";
+import { BadRequestException, UnauthorizedException } from "./Errors/exception.js";
 import envConfig from "../../../Config/config.js";
 import UserRepository from "../../DB/Repositories/user.repository.js";
 import { tokenTypesEnum } from "../constants.js";
+import { get } from "../Services/redis.service.js";
 const jwtConfig=envConfig.jwt;
 const userRepo=new UserRepository();
 export const generateToken=(payload,secret,options)=>
@@ -11,8 +12,6 @@ export const generateToken=(payload,secret,options)=>
 }
 export const verifyToken=(token,secret)=>
 {
-
- 
  return jwt.verify(token,secret)
 }
 export const decodeToken=async({token,tokenType})=>
@@ -22,11 +21,16 @@ export const decodeToken=async({token,tokenType})=>
   
  const data=jwt.decode(token); 
 
+
  
- if(!data.role)
- {
-  throw new BadRequestException('Role not found in token ',null,'MISSING_ROLE')
- }
+ 
+  if (!data || !data.role) {
+    throw new BadRequestException(
+      "Invalid token or role not found",
+      null,
+      "INVALID_TOKEN"
+    );
+  }
  const roleSignatures=jwtConfig[data.role];
  let signature;
  switch (tokenType) {
@@ -41,11 +45,18 @@ export const decodeToken=async({token,tokenType})=>
 
  }
 
+
  
     const decodedData=verifyToken(token,signature);
     
-    console.log("decodedData:", decodedData);
-console.log("userId:", decodedData._id);
+    const isTokenBlackListed=await get(`bl_${tokenType}_${decodedData.jti}`);
+    console.log(isTokenBlackListed);
+    
+    if(isTokenBlackListed)
+    {
+      throw new UnauthorizedException('This token is revoked try to re-login',null,'UNotherized Token')
+    }
+
     const user= await userRepo.findDocumentById(decodedData._id);
     //console.log(user);
     
@@ -54,5 +65,5 @@ console.log("userId:", decodedData._id);
       throw new BadRequestException('User not found',null,'NOTFOUND')
 
     }
-   return user;
+   return {user,tokenData:decodedData};
 }
