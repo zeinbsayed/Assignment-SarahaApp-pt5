@@ -20,3 +20,12 @@ export const providersEnum={
     GOOGLE:"google",
     
 }
+export const emailOtpExpiration=300;
+export const allowedExtentions=
+    {
+        image:['jpeg','png'],
+        video:['mp4'],
+        application:['xlxs','pdf']
+
+    }
+;

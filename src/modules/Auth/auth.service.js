@@ -6,15 +6,40 @@ import { BadRequestException, ConflictException } from "../../Common/Utils/Error
 import { encrypt } from "../../Common/Utils/Security/encryption.security.js";
 import { compareTwoHashes, hash } from "../../Common/Utils/Security/hashing.security.js";
 import {  decodeToken, generateToken } from "../../Common/Utils/token.utils.js";
-import { providersEnum, tokenTypesEnum } from "../../Common/constants.js";
+import { emailOtpExpiration, providersEnum, tokenTypesEnum } from "../../Common/constants.js";
 import  {OAuth2Client} from 'google-auth-library'
 import crypto from 'node:crypto'
-import { calculateTTL, set } from "../../Common/Services/redis.service.js";
+import { calculateTTL, del, get, set } from "../../Common/Services/redis.service.js";
 import { v4 as uuidv4 } from 'uuid'; 
+import { eventEmitter, sendEmail } from "../../Common/Services/email.service.js";
 const userRepo=new UserRepository();
+
+
+////////////handle sending verification otp
+const handleSendingVerifvationOTP=async(email)=>
+{
+ 
+ const otp=crypto.randomInt(1000,100000).toString();
+
+
+const hashedOtp=await hash(otp);
+ 
+   //send email for user
+   eventEmitter.emit('sendMailEvent',{
+    to:email,
+    subject:'Email Verification ',
+    message:`<h1> This is your verification OTP</h1>
+              <h2>${otp}</h2>
+              <h3> This otp is valid for 5 minutes</h3>`
+   })
+   /////////////////////////////////
+   //email_verifcation =>>>>hashed otp
+   set({key:`email_verification:${email}`,value:hashedOtp,options:{EX:emailOtpExpiration}})
+
+}
 export const signUp=async (userData)=>
 {
- const{username,email,password,gender,age,phoneNumber,role}=userData;
+ const{username,email,password,gender,age,phoneNumber,role,profilePicture}=userData;
  const usernamesplit=username.split(" ");
  const firstName=usernamesplit[0];
  const lastName=usernamesplit[1];
@@ -30,6 +55,10 @@ export const signUp=async (userData)=>
  const hashedPassword=await hash(password);
  //return Users.create({firstName,lastName,email,password:hashedPassword,gender,age
    //,phoneNumber:encryptionPhone||undefined});
+ ////otp verifcation
+ handleSendingVerifvationOTP(email);
+ 
+   /////////////////////////////////////
 return userRepo.createOneDocument(
    {firstName,
       lastName,
@@ -37,7 +66,7 @@ return userRepo.createOneDocument(
       password:hashedPassword,
       gender,age
    ,phoneNumber:encryptionPhone||undefined
-,role});
+,role,profilePicture});
  //const userInstance=new Users({firstName,lastName,email,password,gender,age});
  //console.log(userInstance);
  
@@ -299,4 +328,23 @@ export const googleLogin = async (idToken) => {
     )
     return {accessTTL,refreshTTL};
     
+  }
+  export const confirmEmail=async(email,otp)=>
+  {
+    const hashedOTP=await get(`email_verification${email}`);
+    if(!hashedOTP)
+    {
+      throw new BadRequestException('Invalid email or your OTP is Expired',null,'OTP_EXPIRATION')
+    }
+    const isVlidOTP=compareTwoHashes(hashedOTP,otp);
+    if(!isVlidOTP)
+    {
+     throw new BadRequestException('Invalid OTP ',null,'OTP_INVALID')
+
+    }
+    ///update database
+    await userRepo.updateOneDocument({email},{isEmailVerified:true});
+    //delete key from radis
+    del(`email_verification${email}`)
+   return true;
   }

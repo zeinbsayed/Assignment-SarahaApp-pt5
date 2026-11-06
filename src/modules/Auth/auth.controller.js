@@ -6,6 +6,7 @@ import { validation } from "../../Middlewares/validation.middleware.js";
 import { BadRequestException } from "../../Common/Utils/Errors/exception.js";
 import { authenticate } from "../../Middlewares/authentication.middleware.js";
 import { decodeRefreshToken } from "../../Middlewares/decodeRefreshToken.middleware.js";
+import { multerUpload } from "../../Middlewares/multer.middlware.js";
 const authRouter=Router();
 
 ////////////////////user signUp//////////////////////////////
@@ -110,7 +111,7 @@ authRouter.post('/google-login',async(req,res,next)=>
 })
 
 ////////////logout 
-//google-login
+//logout
 authRouter.post('/logout',authenticate,decodeRefreshToken,async(req,res,next)=>
 {
     console.log("AcessTokenData",req.accessTokenData);
@@ -118,4 +119,14 @@ authRouter.post('/logout',authenticate,decodeRefreshToken,async(req,res,next)=>
     const result=await authService.logout(req.accessTokenData,req.refreshTokenData)
     res.status(200).json({message:"user logged out successfully",data:result})
 })
+
+//confirm Email
+authRouter.patch('/confirm-email',async(req,res,next)=>
+{
+    const {email,otp}=req.body;
+    const result=await authService.confirmEmail(email,otp.toString())
+    res.status(200).json({message:"Email confirmed successfully",data:result})
+})
+
+
 export default authRouter;

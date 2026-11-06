@@ -120,3 +120,13 @@ export const findOneAndDelete=async(userId)=>
  //return Users.findOneAndDelete({_id:userId});
  return userRepo.findOneAndDeleteDocument({_id:userId});
 }
+////////////////upload User Profile picture(uploadProfilePicture)/////////////////////////////////
+export const uploadProfilePicture=async(file,user)=>
+{
+ console.log("path",file.path);
+ 
+ const result=await userRepo.findByIdAndUpdateDocument(user._id,{profilePicture:file.path},{new:true});
+ console.log(result);
+ return result;
+ 
+}

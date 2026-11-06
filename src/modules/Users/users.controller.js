@@ -6,6 +6,11 @@ import { userIdSchema, userSchema } from "./users.validation.js";
 import { authenticate } from "../../Middlewares/authentication.middleware.js";
 import { authorize } from "../../Middlewares/authorization.middleware.js";
 import { roleEnum } from "../../Common/constants.js";
+import {fileTypeFromFile} from 'file-type';
+import { multerUpload } from "../../Middlewares/multer.middlware.js";
+import { fileValidation } from "../../Middlewares/fileValidation.middleware.js";
+import { auth } from "google-auth-library";
+import { BadRequestException } from "../../Common/Utils/Errors/exception.js";
 const userRouter=Router();
 
 /////////////////////Get User Profile Data////////////////////////
@@ -102,4 +107,38 @@ userRouter.delete('/findOneAndDelete',authenticate,async(req,res)=>
   
 })
 
+
+//file upload_test
+
+/*userRouter.post('/upload',multerUpload({ desiredPath: 'Covers' }).single('image'),fileValidation,async (req, res) => {
+        res.status(200).json({message: 'Uploaded successfully', data: req.file });
+    }
+);*/
+
+//files upload_test
+
+/*userRouter.post('/upload',multerUpload({ desiredPath: 'Covers' }).fields([
+    {name:"main",maxCount:1},
+    {name:"sub",maxCount:2}
+]),async (req, res) => {
+        res.status(200).json({ message: 'Uploaded successfully',data: req.files });
+    });*/
+
+    
+//picture upload
+
+userRouter.patch('/profile-picture',authenticate,multerUpload({ desiredPath: 'Profiles' }).single('profile'),fileValidation,async (req, res) => 
+    {
+        
+        
+       const file=req.file;
+       if(!file)
+       {
+        throw new BadRequestException('Please Upload a profile picture ',null,'MISSIED_FILE')
+       }
+       const {authUser}=req;
+       const result=await userService.uploadProfilePicture(file,authUser); 
+      res.status(200).json({ message: 'Uploaded Profile Picture successfully',data:result}); 
+    }
+);
 export default userRouter;

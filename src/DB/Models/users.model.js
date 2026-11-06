@@ -46,10 +46,10 @@ const userSchema=new mongoose.Schema(
       min:[18,"Age must be at least 18"],
       max:[100,"Age must be at most 100"]
     },
-    profilePicture:
-    {
-      type:String
-    },
+    profilePicture :{
+    type: String,
+    default: null
+},
     phoneNumber:String,
     role:{
       type:String,
@@ -64,12 +64,17 @@ const userSchema=new mongoose.Schema(
         unique:true
       },
     },
-      provider:
-      {
+    provider:
+    {
         type:String,
         enum:Object.values(providersEnum),
         default:providersEnum.SYSTEM
-      }
+     },
+     isEmailVerified:
+     {
+      type:Boolean,
+      default:false
+     }
     
    },
    {
